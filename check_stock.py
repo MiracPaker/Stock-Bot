@@ -1,11 +1,17 @@
 """
-Zara Stok Kontrol - Tek Seferlik Çalışma (GitHub Actions için)
-----------------------------------------------------------------
+Inditex Stok Kontrol - Tek Seferlik Çalışma (GitHub Actions için)
+--------------------------------------------------------------------
 Bu script sonsuz döngü yerine TEK BİR kontrol yapıp çıkar.
 Tekrar tekrar bildirim göndermemek için hangi ürün/beden kombinasyonunun
 zaten bildirildiği `state.json` dosyasında saklanır. GitHub Actions
 workflow'u her çalıştıktan sonra bu dosyayı repoya commit'ler, böylece
 bir sonraki çalıştırmada durum korunur.
+
+Site adaptörleri:
+- Zara: "Sepete ekle" butonuna tıklanınca açılan beden panelini okur.
+- Bershka: Sayfadaki beden listesini (productDetailSize) okur.
+- Diğer Inditex siteleri (Pull&Bear, Stradivarius, Massimo Dutti, Oysho):
+  Önce Zara akışını, o boş dönerse Bershka akışını dener (garanti değildir).
 
 Ortam değişkenleri (GitHub Secrets üzerinden verilir):
     BOT_API   -> Telegram bot token
@@ -26,26 +32,20 @@ from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
+from selenium.common.exceptions import TimeoutException, NoSuchElementException, ElementClickInterceptedException
 from webdriver_manager.chrome import ChromeDriverManager
 
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s [%(levelname)s] %(message)s",
 )
-log = logging.getLogger("zara_bot")
+log = logging.getLogger("stock_bot")
 
 USER_AGENT = (
     "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
     "(KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36"
 )
 
-SIZE_SELECTORS = [
-    "[data-qa-action='size-in-stock'], [data-qa-action='size-out-of-stock']",
-    "button[class*='size-selector']",
-    "li[class*='product-size'] button",
-]
-
-# Inditex ailesi - hepsi aynı alt yapıyı (aynı beden seçici yapısını) kullanır.
 SUPPORTED_DOMAINS = {
     "zara.com": "Zara",
     "bershka.com": "Bershka",
@@ -60,7 +60,6 @@ STATE_PATH = "state.json"
 
 
 def identify_site(url):
-    """URL'den site adını çıkarır. Tanınmayan domain için None döner."""
     try:
         host = urlparse(url).netloc.lower()
     except Exception:
@@ -110,58 +109,102 @@ def build_driver():
     return driver
 
 
-def dismiss_cookie_banner(driver):
+def dismiss_cookie_banner(driver, wait):
     try:
-        WebDriverWait(driver, 5).until(
-            EC.element_to_be_clickable((By.ID, "onetrust-accept-btn-handler"))
-        ).click()
-    except Exception:
+        accept = wait.until(EC.element_to_be_clickable((By.ID, "onetrust-accept-btn-handler")))
+        accept.click()
+    except TimeoutException:
         pass
 
 
-def get_size_status(driver, url):
+def get_size_status_zara(driver, url):
+    """Zara: 'Sepete ekle' butonuna tıklanınca açılan beden panelini okur."""
     driver.get(url)
-    dismiss_cookie_banner(driver)
+    wait = WebDriverWait(driver, 30)
+    dismiss_cookie_banner(driver, wait)
+
+    try:
+        add_to_cart = wait.until(
+            EC.element_to_be_clickable((By.CSS_SELECTOR, "button[data-qa-action='add-to-cart']"))
+        )
+        overlays = driver.find_elements(By.CLASS_NAME, "zds-backdrop")
+        if overlays:
+            driver.execute_script("arguments[0].remove();", overlays[0])
+        driver.execute_script("arguments[0].click();", add_to_cart)
+    except (TimeoutException, ElementClickInterceptedException) as e:
+        log.warning(f"'Sepete ekle' butonuna tıklanamadı: {e}")
+        return {}
+
+    try:
+        wait.until(EC.presence_of_element_located((By.CLASS_NAME, "size-selector-sizes")))
+    except TimeoutException:
+        return {}
 
     statuses = {}
-    for selector in SIZE_SELECTORS:
+    size_elements = driver.find_elements(By.CLASS_NAME, "size-selector-sizes-size")
+    for li in size_elements:
         try:
-            WebDriverWait(driver, 12).until(
-                EC.presence_of_element_located((By.CSS_SELECTOR, selector))
-            )
+            label = li.find_element(
+                By.CSS_SELECTOR, "div[data-qa-qualifier='size-selector-sizes-size-label']"
+            ).text.strip().upper()
+            if not label:
+                continue
+            button = li.find_element(By.CLASS_NAME, "size-selector-sizes-size__button")
+            action = button.get_attribute("data-qa-action")
+            in_stock = action in ("size-in-stock", "size-low-on-stock")
+            statuses[label] = in_stock
+        except NoSuchElementException:
+            continue
         except Exception:
             continue
-
-        elements = driver.find_elements(By.CSS_SELECTOR, selector)
-        if not elements:
-            continue
-
-        for el in elements:
-            try:
-                label = el.text.strip().upper()
-                if not label:
-                    continue
-                action = el.get_attribute("data-qa-action")
-                aria_disabled = el.get_attribute("aria-disabled")
-                cls = (el.get_attribute("class") or "").lower()
-
-                if action == "size-in-stock":
-                    in_stock = True
-                elif action == "size-out-of-stock":
-                    in_stock = False
-                elif aria_disabled == "true" or "disabled" in cls or "soldout" in cls or "sold-out" in cls:
-                    in_stock = False
-                else:
-                    in_stock = True
-
-                statuses[label] = in_stock
-            except Exception:
-                continue
-
-        if statuses:
-            break
-
     return statuses
+
+
+def get_size_status_bershka(driver, url):
+    """Bershka: sayfadaki beden listesini (productDetailSize) okur."""
+    driver.get(url)
+    wait = WebDriverWait(driver, 20)
+    dismiss_cookie_banner(driver, wait)
+
+    try:
+        wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, "[data-qa-anchor='productDetailSize']")))
+    except TimeoutException:
+        return {}
+
+    time.sleep(5)  # dinamik class güncellemeleri için
+
+    statuses = {}
+    buttons = driver.find_elements(By.CSS_SELECTOR, "button[data-qa-anchor='sizeListItem']")
+    for button in buttons:
+        try:
+            label = button.find_element(By.CSS_SELECTOR, "span.text__label").text.strip().upper()
+            if not label:
+                continue
+            class_attr = button.get_attribute("class") or ""
+            aria_disabled = button.get_attribute("aria-disabled") == "true"
+            is_disabled_attr = button.get_attribute("disabled") is not None
+            is_disabled = "is-disabled" in class_attr or aria_disabled or is_disabled_attr
+            statuses[label] = not is_disabled
+        except NoSuchElementException:
+            continue
+        except Exception:
+            continue
+    return statuses
+
+
+def get_size_status(driver, url, site_name):
+    """Siteye göre doğru adaptörü seçer. Zara/Bershka doğrulanmış, diğerleri deneme (best-effort)."""
+    if site_name == "Zara":
+        return get_size_status_zara(driver, url)
+    if site_name == "Bershka":
+        return get_size_status_bershka(driver, url)
+
+    # Pull&Bear, Stradivarius, Massimo Dutti, Oysho, bilinmeyen siteler:
+    # önce Zara tarzı akışı, olmazsa Bershka tarzı akışı dene.
+    statuses = get_size_status_zara(driver, url)
+    if statuses:
+        return statuses
+    return get_size_status_bershka(driver, url)
 
 
 def main():
@@ -192,7 +235,7 @@ def main():
                 site_name = "Bilinmeyen site"
 
             try:
-                statuses = get_size_status(driver, url)
+                statuses = get_size_status(driver, url, site_name)
 
                 if not statuses:
                     log.warning(f"Beden bilgisi okunamadı, site yapısı değişmiş olabilir: {url}")
