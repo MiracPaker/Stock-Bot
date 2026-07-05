@@ -1,0 +1,40 @@
+name: Zara Stok Kontrol
+
+on:
+  schedule:
+    # Her 15 dakikada bir çalışır. GitHub'da minimum aralık 5 dakikadır,
+    # ancak yoğunlukta gecikmeler olabilir. İsterseniz "*/5 * * * *" yapabilirsiniz.
+    - cron: "*/15 * * * *"
+  workflow_dispatch: {}   # Elle "Run workflow" ile de tetikleyebilirsiniz
+
+permissions:
+  contents: write   # state.json'u commit'leyebilmek için
+
+jobs:
+  check-stock:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Repoyu çek
+        uses: actions/checkout@v4
+
+      - name: Python kur
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Bağımlılıkları yükle
+        run: pip install -r requirements.txt
+
+      - name: Stok kontrolü çalıştır
+        env:
+          BOT_API: ${{ secrets.BOT_API }}
+          CHAT_ID: ${{ secrets.CHAT_ID }}
+        run: python check_stock.py
+
+      - name: Durumu (state.json) commit'le
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add state.json
+          git diff --staged --quiet || git commit -m "Stok durumu güncellendi"
+          git push
