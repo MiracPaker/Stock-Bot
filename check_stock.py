@@ -226,6 +226,19 @@ def get_size_status(driver, url, site_name):
     return get_size_status_bershka(driver, url)
 
 
+def find_target_status(statuses, target_size):
+    """'M' hedef bedenini, sayfadaki 'M (US M)' gibi bileşik etiketlerle
+    de eşleştirebilmek için esnek arama yapar."""
+    if target_size in statuses:
+        return statuses[target_size]
+    for label, val in statuses.items():
+        short = label.split("(")[0].strip()
+        short = short.split(" ")[0].strip()
+        if short == target_size:
+            return val
+    return None
+
+
 def main():
     config = load_json(CONFIG_PATH, {})
     state = load_json(STATE_PATH, {})
@@ -256,18 +269,6 @@ def main():
             try:
                 statuses = get_size_status(driver, url, site_name)
 
-                # GEÇİCİ TEŞHİS: her ürün için koşulsuz sayfa dökümü kaydet
-                try:
-                    with open(f"debug_dump_{idx}.html", "w", encoding="utf-8") as f:
-                        f.write(driver.page_source)
-                    with open(f"debug_status_{idx}.json", "w", encoding="utf-8") as f:
-                        json.dump(
-                            {"url": url, "target_size": target_size, "statuses": statuses if statuses != SOLD_OUT_SENTINEL else "SOLD_OUT"},
-                            f, ensure_ascii=False, indent=2
-                        )
-                except Exception as dump_err:
-                    log.error(f"Teşhis dökümü kaydedilemedi: {dump_err}")
-
                 if statuses == SOLD_OUT_SENTINEL:
                     state[key] = False
                     log.info(
@@ -286,7 +287,7 @@ def main():
                         log.error(f"debug_page.html kaydedilemedi: {e}")
                     continue
 
-                in_stock = statuses.get(target_size)
+                in_stock = find_target_status(statuses, target_size)
 
                 if in_stock is None:
                     log.info(
