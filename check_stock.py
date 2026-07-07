@@ -239,6 +239,12 @@ def main():
 
                 if not statuses:
                     log.warning(f"Beden bilgisi okunamadı, site yapısı değişmiş olabilir: {url}")
+                    try:
+                        with open("debug_page.html", "w", encoding="utf-8") as f:
+                            f.write(driver.page_source)
+                        log.info("Teşhis için debug_page.html kaydedildi.")
+                    except Exception as e:
+                        log.error(f"debug_page.html kaydedilemedi: {e}")
                     continue
 
                 in_stock = statuses.get(target_size)
