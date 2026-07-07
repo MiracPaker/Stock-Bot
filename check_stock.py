@@ -117,11 +117,30 @@ def dismiss_cookie_banner(driver, wait):
         pass
 
 
+SOLD_OUT_SENTINEL = "__TUM_URUN_TUKENDI__"
+
+
+def is_completely_sold_out(driver):
+    """Zara/Inditex siteleri, ürünün TÜM bedenleri tükendiğinde 'Sepete ekle'
+    yerine 'Benzer ürünler' + 'TÜKENDİ' etiketli bir buton gösterir.
+    Bu, gerçek ve beklenen bir durumdur (site yapısı bozulması değil)."""
+    try:
+        el = driver.find_element(By.CSS_SELECTOR, "button[data-qa-action='show-similar-products']")
+        return "tükendi" in el.text.strip().lower()
+    except NoSuchElementException:
+        return False
+    except Exception:
+        return False
+
+
 def get_size_status_zara(driver, url):
     """Zara: 'Sepete ekle' butonuna tıklanınca açılan beden panelini okur."""
     driver.get(url)
     wait = WebDriverWait(driver, 30)
     dismiss_cookie_banner(driver, wait)
+
+    if is_completely_sold_out(driver):
+        return SOLD_OUT_SENTINEL
 
     try:
         add_to_cart = wait.until(
@@ -202,7 +221,7 @@ def get_size_status(driver, url, site_name):
     # Pull&Bear, Stradivarius, Massimo Dutti, Oysho, bilinmeyen siteler:
     # önce Zara tarzı akışı, olmazsa Bershka tarzı akışı dene.
     statuses = get_size_status_zara(driver, url)
-    if statuses:
+    if statuses == SOLD_OUT_SENTINEL or statuses:
         return statuses
     return get_size_status_bershka(driver, url)
 
@@ -236,6 +255,14 @@ def main():
 
             try:
                 statuses = get_size_status(driver, url, site_name)
+
+                if statuses == SOLD_OUT_SENTINEL:
+                    state[key] = False
+                    log.info(
+                        f"Ürünün TÜM bedenleri şu anda tükenmiş (sadece '{target_size}' değil, "
+                        f"hiçbir beden yok). ({url})"
+                    )
+                    continue
 
                 if not statuses:
                     log.warning(f"Beden bilgisi okunamadı, site yapısı değişmiş olabilir: {url}")
