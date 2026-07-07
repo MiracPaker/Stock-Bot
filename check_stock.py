@@ -281,6 +281,11 @@ def main():
                         f"'{target_size}' bedeni bulunamadı. "
                         f"Sayfadaki bedenler: {list(statuses.keys())}"
                     )
+                    try:
+                        with open("debug_sizes.json", "w", encoding="utf-8") as f:
+                            json.dump({"url": url, "target_size": target_size, "statuses": statuses}, f, ensure_ascii=False, indent=2)
+                    except Exception:
+                        pass
                 elif in_stock:
                     if not state.get(key):
                         msg = f"🎉 Stok geldi!\nSite: {site_name}\nBeden: {target_size}\nÜrün: {url}"
