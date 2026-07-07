@@ -1,10 +1,6 @@
 {
   "products": [
     {
-      "url": "https://www.zara.com/tr/tr/cift-tarafli-suni-kurk-bomber-ceket-p00993400.html",
-      "size": "M"
-    },
-    {
       "url": "https://www.pullandbear.com/tr/ketenli-gomlek-l03460526?pelement=732561462&cS=251",
       "size": "S"
     },
@@ -15,6 +11,10 @@
     {
       "url": "https://www.bershka.com/tr/skater-jean-c0p209138961.html?colorId=800",
       "size": "42"
+    },
+    {
+      "url": "https://www.pullandbear.com/tr/siyah-kapusonlu-sweatshirt-stwd-91-l03550501?cS=800&pelement=721446351",
+      "size": "S"
     }
   ]
 }
