@@ -269,6 +269,16 @@ def main():
             try:
                 statuses = get_size_status(driver, url, site_name)
 
+                try:
+                    with open(f"debug_status_{idx}.json", "w", encoding="utf-8") as f:
+                        json.dump(
+                            {"site": site_name, "url": url, "target_size": target_size,
+                             "statuses": statuses if statuses != SOLD_OUT_SENTINEL else "SOLD_OUT"},
+                            f, ensure_ascii=False, indent=2
+                        )
+                except Exception as dump_err:
+                    log.error(f"Teşhis dökümü kaydedilemedi: {dump_err}")
+
                 if statuses == SOLD_OUT_SENTINEL:
                     state[key] = False
                     log.info(
