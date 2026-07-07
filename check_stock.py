@@ -180,29 +180,31 @@ def get_size_status_zara(driver, url):
 
 
 def get_size_status_bershka(driver, url):
-    """Bershka: sayfadaki beden listesini (productDetailSize) okur."""
+    """Bershka: '.size-selector' içindeki 'button.size-button' listesini okur."""
     driver.get(url)
     wait = WebDriverWait(driver, 20)
     dismiss_cookie_banner(driver, wait)
 
     try:
-        wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, "[data-qa-anchor='productDetailSize']")))
+        wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, "button.size-button")))
     except TimeoutException:
         return {}
 
-    time.sleep(5)  # dinamik class güncellemeleri için
-
     statuses = {}
-    buttons = driver.find_elements(By.CSS_SELECTOR, "button[data-qa-anchor='sizeListItem']")
+    buttons = driver.find_elements(By.CSS_SELECTOR, "button.size-button")
     for button in buttons:
         try:
-            label = button.find_element(By.CSS_SELECTOR, "span.text__label").text.strip().upper()
+            label = button.find_element(By.CSS_SELECTOR, "span.size-button__label").text.strip().upper()
             if not label:
                 continue
             class_attr = button.get_attribute("class") or ""
             aria_disabled = button.get_attribute("aria-disabled") == "true"
-            is_disabled_attr = button.get_attribute("disabled") is not None
-            is_disabled = "is-disabled" in class_attr or aria_disabled or is_disabled_attr
+            aria_description = (button.get_attribute("aria-description") or "").lower()
+            is_disabled = (
+                "size-button--disabled" in class_attr
+                or aria_disabled
+                or "tükendi" in aria_description
+            )
             statuses[label] = not is_disabled
         except NoSuchElementException:
             continue
@@ -268,16 +270,6 @@ def main():
 
             try:
                 statuses = get_size_status(driver, url, site_name)
-
-                try:
-                    with open(f"debug_status_{idx}.json", "w", encoding="utf-8") as f:
-                        json.dump(
-                            {"site": site_name, "url": url, "target_size": target_size,
-                             "statuses": statuses if statuses != SOLD_OUT_SENTINEL else "SOLD_OUT"},
-                            f, ensure_ascii=False, indent=2
-                        )
-                except Exception as dump_err:
-                    log.error(f"Teşhis dökümü kaydedilemedi: {dump_err}")
 
                 if statuses == SOLD_OUT_SENTINEL:
                     state[key] = False
