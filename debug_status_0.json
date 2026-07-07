@@ -2,5 +2,11 @@
   "site": "Zara",
   "url": "https://www.zara.com/tr/tr/cift-tarafli-suni-kurk-bomber-ceket-p00993400.html",
   "target_size": "M",
-  "statuses": "SOLD_OUT"
+  "statuses": {
+    "S (US S)": false,
+    "M (US M)": true,
+    "L (US L)": false,
+    "XL (US XL)": false,
+    "XXL (US XXL)": false
+  }
 }
