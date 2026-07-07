@@ -240,7 +240,7 @@ def main():
 
     driver = build_driver()
     try:
-        for product in products:
+        for idx, product in enumerate(products):
             url = product["url"]
             target_size = product["size"].upper()
             key = f"{url}|{target_size}"
@@ -255,6 +255,18 @@ def main():
 
             try:
                 statuses = get_size_status(driver, url, site_name)
+
+                # GEÇİCİ TEŞHİS: her ürün için koşulsuz sayfa dökümü kaydet
+                try:
+                    with open(f"debug_dump_{idx}.html", "w", encoding="utf-8") as f:
+                        f.write(driver.page_source)
+                    with open(f"debug_status_{idx}.json", "w", encoding="utf-8") as f:
+                        json.dump(
+                            {"url": url, "target_size": target_size, "statuses": statuses if statuses != SOLD_OUT_SENTINEL else "SOLD_OUT"},
+                            f, ensure_ascii=False, indent=2
+                        )
+                except Exception as dump_err:
+                    log.error(f"Teşhis dökümü kaydedilemedi: {dump_err}")
 
                 if statuses == SOLD_OUT_SENTINEL:
                     state[key] = False
