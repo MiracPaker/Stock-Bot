@@ -294,7 +294,16 @@ def main():
                     log.info(f"'{target_size}' bedeni henüz stokta yok. ({url})")
 
             except Exception as e:
+                import traceback
                 log.error(f"Ürün kontrol edilirken hata oluştu ({url}): {e}")
+                try:
+                    with open("last_error.txt", "w", encoding="utf-8") as f:
+                        f.write(f"URL: {url}\nHata: {e}\n\n{traceback.format_exc()}")
+                    with open("debug_page.html", "w", encoding="utf-8") as f:
+                        f.write(driver.page_source)
+                    log.info("Teşhis için last_error.txt ve debug_page.html kaydedildi.")
+                except Exception as e2:
+                    log.error(f"Teşhis dosyaları kaydedilemedi: {e2}")
 
             time.sleep(random.uniform(2, 4))
     finally:
