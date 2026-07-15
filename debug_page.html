@@ -1,5 +1,5 @@
 <html lang="tr-TR" dir="ltr" class="ua-no-touch ua-windows object-fit-supported bp--portrait bp--h-large no-touchevents svg inputsearchevent is-ready is-loaded should-prevent-uppercase grunticon" style="--inner-vh: 16.57px;"><head>
-  <script async="" src="//www.googletagmanager.com/gtm.js?id=GTM-KMT5GZ9"></script><script>
+  <script async="" src="//www.googletagmanager.com/gtm.js?id=GTM-KMT5GZ9"></script><script type="text/javascript">Object.defineProperty(document, "referrer", {get : function(){ return ""; }})</script><script>
 var isIE = (/*@cc_on!@*/false || (!!window.MSInputMethodContext && !!document.documentMode));
 if (isIE) {
   window.location.href = 'https://www.pullandbear.com/tr/browser-not-supported.html';
@@ -64,11 +64,11 @@ if (isIE) {
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="google-site-verification" content="okk9wo57OXokq9gjgUTuzveiIGilxs5LQfvLW8iNoFU">
 <meta name="apple-itunes-app" content="app-id=388614277">
-<link rel="apple-touch-icon" sizes="152x152" href="https://static.pullandbear.net/2/static2/itxwebstandard/images/icons/touch-icon-ipad.png?t=20260715085833979356608">
-<link rel="apple-touch-icon" sizes="180x180" href="https://static.pullandbear.net/2/static2/itxwebstandard/images/icons/touch-icon-iphone-retina.png?t=20260715085833979356608">
-<link rel="apple-touch-icon" sizes="167x167" href="https://static.pullandbear.net/2/static2/itxwebstandard/images/icons/touch-icon-ipad-retina.png?t=20260715085833979356608">
-<link rel="apple-touch-icon" sizes="120x120" href="https://static.pullandbear.net/2/static2/itxwebstandard/images/icons/touch-icon-iphone.png?t=20260715085833979356608">
-<link rel="shortcut icon" type="image/x-icon" href="https://static.pullandbear.net/2/static2/itxwebstandard/images/favicon.ico?t=20260715085833979356608">
+<link rel="apple-touch-icon" sizes="152x152" href="https://static.pullandbear.net/2/static2/itxwebstandard/images/icons/touch-icon-ipad.png?t=20260715085834979356608">
+<link rel="apple-touch-icon" sizes="180x180" href="https://static.pullandbear.net/2/static2/itxwebstandard/images/icons/touch-icon-iphone-retina.png?t=20260715085834979356608">
+<link rel="apple-touch-icon" sizes="167x167" href="https://static.pullandbear.net/2/static2/itxwebstandard/images/icons/touch-icon-ipad-retina.png?t=20260715085834979356608">
+<link rel="apple-touch-icon" sizes="120x120" href="https://static.pullandbear.net/2/static2/itxwebstandard/images/icons/touch-icon-iphone.png?t=20260715085834979356608">
+<link rel="shortcut icon" type="image/x-icon" href="https://static.pullandbear.net/2/static2/itxwebstandard/images/favicon.ico?t=20260715085834979356608">
   <script async="" src="https://bdyoomvaq5bp.eu.wpi.jscrambler.com/8y66hd2l3z3t/1588655105.js"></script>
 <script type="text/javascript">
     const localeReplace = "tr_TR";
@@ -1053,7 +1053,170 @@ if (inditex.iFrontVersion === '27.0.0' || inditex.iFrontVersion === '27.1.0') {
   }
 </script>
 <!-- END Fix_Responsive_ECOMPULL-26713 -->
- 
+ <!-- FIX Fix_Responsive_ECOMPULL-26681 -->
+
+<script type="text/javascript">
+var _templateObject;
+function _taggedTemplateLiteral(strings, raw) { if (!raw) { raw = strings.slice(0); } return Object.freeze(Object.defineProperties(strings, { raw: { value: Object.freeze(raw) } })); }
+if ((inditex.iFrontVersion === '27.0.0' || inditex.iFrontVersion === '27.1.0') && (inditex.itxRecommendationsElementWC || inditex.itxGridProductWC || inditex.itxSearchGridWC || inditex.itxProductModularWC || inditex.itxEmptyShopCart || inditex.itxCartViewSimilarsWC || inditex.itxCartRecommendedWC || inditex.itxPriceElementWC)) {
+  (function () {
+    var html = inditex.itxLit.html;
+    inditex.itxRecommendationsElementWC.prototype._renderMinigrid = function (mod) {
+      var _this$config$ga, _this$config$ga2;
+      var _mod$config = mod.config,
+        sourceList = _mod$config.sourceList,
+        size = _mod$config.size,
+        xmediaLocation = _mod$config.xmediaLocation,
+        position = _mod$config.position,
+        title = _mod$config.title,
+        template = _mod$config.template,
+        list = _mod$config.list,
+        layoutProperties = _mod$config.layoutProperties,
+        _mod$config$productFe = _mod$config.productFeatures,
+        productFeatures = _mod$config$productFe === void 0 ? {} : _mod$config$productFe,
+        _mod$config$extraConf = _mod$config.extraConfig,
+        _mod$config$extraConf2 = _mod$config$extraConf === void 0 ? false : _mod$config$extraConf,
+        isSelectionQueued = _mod$config$extraConf2.isSelectionQueued,
+        data = mod.data;
+      var _ref = layoutProperties && Array.isArray(layoutProperties) ? layoutProperties[0] : {},
+        _ref$showWishlist = _ref.showWishlist,
+        showWishlist = _ref$showWishlist === void 0 ? true : _ref$showWishlist,
+        _ref$showAddToCart = _ref.showAddToCart,
+        showAddToCart = _ref$showAddToCart === void 0 ? true : _ref$showAddToCart,
+        _ref$showColours = _ref.showColours,
+        showColours = _ref$showColours === void 0 ? true : _ref$showColours,
+        _ref$showProductName = _ref.showProductName,
+        showProductName = _ref$showProductName === void 0 ? true : _ref$showProductName,
+        _ref$showDiscount = _ref.showDiscount,
+        showDiscount = _ref$showDiscount === void 0 ? true : _ref$showDiscount,
+        _ref$showPrewarming = _ref.showPrewarming,
+        showPrewarming = _ref$showPrewarming === void 0 ? true : _ref$showPrewarming,
+        _ref$showTags = _ref.showTags,
+        showTags = _ref$showTags === void 0 ? true : _ref$showTags,
+        _ref$productDetailCli = _ref.productDetailClickDisabled,
+        productDetailClickDisabled = _ref$productDetailCli === void 0 ? false : _ref$productDetailCli,
+        columns = _ref.columns;
+      var RECOMMENDATIONS_ELEMENT_TYPES = {
+        TAB_CAROUSEL: 'tabCarrousel',
+        BIG_CAROUSEL: 'bigCarousel',
+        SMALL_CAROUSEL: 'smallCarousel',
+        MINIGRID: 'miniGrid',
+        STRECH_MINIGRID: 'strechMinigrid',
+        MORE_INFO: 'moreInfo'
+      };
+      var sources = sourceList.map(function (src) {
+        return src.source;
+      }).join(',');
+      var classes = {
+        'stretch-minigrid': template === RECOMMENDATIONS_ELEMENT_TYPES.STRECH_MINIGRID,
+        minigrid: template !== RECOMMENDATIONS_ELEMENT_TYPES.STRECH_MINIGRID
+      };
+      var className = Object.keys(classes).filter(function (classKey) {
+        return classes[classKey];
+      }).join(' ');
+      var impressionConfig = {
+        list: 'recommendationsElement',
+        pageType: (_this$config$ga = this.config.ga) === null || _this$config$ga === void 0 ? void 0 : _this$config$ga.pageType,
+        category: (_this$config$ga2 = this.config.ga) === null || _this$config$ga2 === void 0 ? void 0 : _this$config$ga2.category
+      };
+      var productConfig = {
+        customLocation: xmediaLocation,
+        wishlist: this._wishlist
+      };
+      return html(_templateObject || (_templateObject = _taggedTemplateLiteral(["\n              <product-minigrid\n                class=\"", "\"\n                .title=\"", "\"\n                .position=\"", "\"\n                .source=\"", "\"\n                .columns=\"", "\"\n                .sourceType=\"", "\"\n                .size=\"", "\"\n                .config=\"", "\"\n                .list=\"", "\"\n                .impressionConfig=\"", "\"\n                .isSelectionQueued=\"", "\"\n                .hideActionButtons=\"", "\"\n                .hideWishlistButton=\"", "\"\n                .hideAddToCart=\"", "\"\n                .hideColours=\"", "\"\n                .hideProductName=\"", "\"\n                .hideDiscount=\"", "\"\n                .hidePrewarming=\"", "\"\n                .hideTags=\"", "\"\n                .hideProductInfo=\"", "\"\n                .isDisabledClickToDetail=\"", "\"\n                ?isCompact=\"", "\"\n                ?hide-theme-cursor=\"", "\">\n              </product-minigrid>\n            "])), className, this._getRecommendationsTitle(title), position, data, columns, sources, size, productConfig, list, impressionConfig, isSelectionQueued, productFeatures.hideActionButtons, productFeatures.hideWishlistButton || !showWishlist, !showAddToCart, this.hideColorSelector || !showColours, !showProductName, !showDiscount, !showPrewarming, productFeatures.hideTags || !showTags, productFeatures.hideProductInfo, productDetailClickDisabled, productFeatures.isCompactProduct, this.config.hideThemeCursor);
+    };
+    if (inditex.itxSearchGridWC) {
+      // Guardamos el CSS original del Web Component
+      var _componentCss = inditex.itxSearchGridWC.styles.cssText;
+      var _cachedStyles = null;
+      Object.defineProperty(inditex.itxSearchGridWC, 'styles', {
+        get: function get() {
+          if (_cachedStyles === null) {
+            // Ponemos aquÃ­ SÃ“LO las nuevas reglas
+            var newCss = 'recommendations-element {--sale-prices-triple-width: 100%;--price-element-sale-justify: center;} @media screen and (max-width: 767px) {recommendations-element {--price-element-has-triple-prices-flex-direction: column; --price-element-discount-container-padding: 4px 2px; --minigrid-grid-container-padding-x: 16px; --minigrid-column-gap: 1px; --price-element-prices-column-gap: 4px;}}';
+            // Calculamos solo una vez y cacheamos
+            _cachedStyles = this.processStyle(_componentCss + newCss);
+          }
+          return _cachedStyles;
+        }
+      });
+    }
+    if (inditex.itxProductModularWC) {
+      // Guardamos el CSS original del Web Component
+      var _componentCss2 = inditex.itxProductModularWC.styles.cssText;
+      Object.defineProperty(inditex.itxProductModularWC, 'styles', {
+        get: function get() {
+          // Ponemos aquÃ­ SÃ“LO las nuevas reglas
+          var newCss = 'product-minigrid {--sale-prices-triple-width: 100%;--price-element-sale-justify: center;} @media screen and (max-width: 767px) {product-minigrid {--price-element-has-triple-prices-flex-direction: column; --price-element-discount-container-padding: 4px 2px; --minigrid-grid-container-padding-x: 16px; --minigrid-column-gap: 6px; --minigrid-padding-x: 0px; --minigrid-padding-title: 22px 32px; --grid-disclaimer-margin: 16px;}}';
+          // Devolvemos el original + las nuevas reglas
+          return this.processStyle(_componentCss2 + newCss);
+        }
+      });
+    }
+    if (inditex.itxEmptyShopCart) {
+      // Guardamos el CSS original del Web Component
+      var _componentCss3 = inditex.itxEmptyShopCart.styles.cssText;
+      Object.defineProperty(inditex.itxEmptyShopCart, 'styles', {
+        get: function get() {
+          // Ponemos aquÃ­ SÃ“LO las nuevas reglas
+          var newCss = 'recommendations-element {--price-element-has-triple-prices-flex-direction: column; --sale-prices-triple-width: 100%;--price-element-sale-justify: center;} @media screen and (max-width: 767px) {recommendations-element {--price-element-discount-container-padding: 4px 2px;--minigrid-grid-container-padding-x: 16px;--minigrid-column-gap: 2px;}} @media screen and (min-width: 1100px) {recommendations-element {--minigrid-column-gap: 2px; --minigrid-grid-container-padding-x: 16px; --price-element-discount-container-padding: 4px 2px;}}';
+          // Devolvemos el original + las nuevas reglas
+          return this.processStyle(_componentCss3 + newCss);
+        }
+      });
+    }
+    if (inditex.itxCartViewSimilarsWC) {
+      // Guardamos el CSS original del Web Component
+      var _componentCss4 = inditex.itxCartViewSimilarsWC.styles.cssText;
+      Object.defineProperty(inditex.itxCartViewSimilarsWC, 'styles', {
+        get: function get() {
+          // Ponemos aquÃ­ SÃ“LO las nuevas reglas
+          var newCss = ':host(.add-shop-cart-similars) recommendations-element {--price-element-has-triple-prices-flex-direction: column; --sale-prices-triple-width: 100%;--price-element-sale-justify: center;} @media screen and (max-width: 767px) {:host(.add-shop-cart-similars) recommendations-element {--price-element-discount-container-padding: 4px 2px; --minigrid-grid-container-padding-x: 16px;--minigrid-column-gap: 2px;}} @media screen and (min-width: 1100px) {recommendations-element {--minigrid-column-gap: 2px; --minigrid-grid-container-padding-x: 16px; --price-element-discount-container-padding: 4px 2px;}}';
+          // Devolvemos el original + las nuevas reglas
+          return this.processStyle(_componentCss4 + newCss);
+        }
+      });
+    }
+    if (inditex.itxCartRecommendedWC) {
+      // Guardamos el CSS original del Web Component
+      var _componentCss5 = inditex.itxCartRecommendedWC.styles.cssText;
+      Object.defineProperty(inditex.itxCartRecommendedWC, 'styles', {
+        get: function get() {
+          // Ponemos aquÃ­ SÃ“LO las nuevas reglas
+          var newCss = 'recommendations-element {--price-element-has-triple-prices-flex-direction: column; --sale-prices-triple-width: 100%;--price-element-sale-justify: center;} @media screen and (max-width: 767px) {recommendations-element {--price-element-discount-container-padding: 4px 2px;--minigrid-grid-container-padding-x: 16px;--minigrid-column-gap: 2px;}} @media screen and (min-width: 1100px) {recommendations-element {--minigrid-column-gap: 2px; --minigrid-grid-container-padding-x: 16px; --price-element-discount-container-padding: 4px 2px;}}';
+          // Devolvemos el original + las nuevas reglas
+          return this.processStyle(_componentCss5 + newCss);
+        }
+      });
+    }
+    if (inditex.itxPriceElementWC) {
+      // Guardamos el CSS original del Web Component
+      var _componentCss6 = inditex.itxPriceElementWC.styles.cssText;
+      Object.defineProperty(inditex.itxPriceElementWC, 'styles', {
+        get: function get() {
+          // Ponemos aquÃ­ SÃ“LO las nuevas reglas
+          var newCss = ':host(price-element[has-triple-prices]) .container.growth-styles .sale-prices {width: var(--sale-prices-triple-width, auto);} .discount-container.growth-styles {padding: var(--price-element-discount-container-padding, 4px 4px 4px 8px);}';
+          // Devolvemos el original + las nuevas reglas
+          return this.processStyle(_componentCss6 + newCss);
+        }
+      });
+    }
+    if (inditex.itxGridProductWC) {
+      // Guardamos el CSS original del Web Component
+      var _componentCss7 = inditex.itxGridProductWC.styles.cssText;
+      Object.defineProperty(inditex.itxGridProductWC, 'styles', {
+        get: function get() {
+          // Ponemos aquÃ­ SÃ“LO las nuevas reglas
+          var newCss = 'price-element[has-triple-prices] {--price-element-flex-direction:var(--price-element-has-triple-prices-flex-direction, row);}';
+          // Devolvemos el original + las nuevas reglas
+          return this.processStyle(_componentCss7 + newCss);
+        }
+      });
+    }
+  })();
+}
+</script>
+<!-- END Fix_Responsive_ECOMPULL-26681 -->
 <!-- END SPOT=PB5_ESpot_Inditex -->
 
 <!-- Begin Mpulse -->
@@ -1173,6 +1336,7 @@ window.BOOMR_config.ResourceTiming.trimUrls = [
 
 
 
+
 <!-- END SPOT=PB5_ESpot_HeadEnd -->
 
 <!-- END post-common head -->
@@ -1244,7 +1408,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src='//www.goog
 
 
     <div class="fixed-content"></div>
-    <div class="m-header is-visible never-been-opened" data-current-theme="dark" data-display-options-default="false" data-instance-id="38fzX" data-component-initialised="true">
+    <div class="m-header is-visible never-been-opened" data-current-theme="dark" data-display-options-default="false" data-instance-id="4n8yZ" data-component-initialised="true">
 <div class="c-nav-header" role="banner">
   <button type="button" class="menu-link-icon icon-arrow-left header-back-button" style="background-image: none;"><svg role="presentation" width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M14 17L9 12" stroke="black" stroke-linecap="square"></path><path d="M9 12L14 7" stroke="black" stroke-linecap="square"></path></svg></button>
   <button id="headerBackButtonMobile" type="button" class="menu-link-icon icon-arrow-previous header-back-button mobile-only" aria-label="GERİ DÖN" style="background-image: none;"><svg role="presentation" width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M19 12.5H19.5V11.5H19V12V12.5ZM5 12V12.5H19V12V11.5H5V12Z" fill="black"></path><path d="M12 5L5 12L12 19" stroke="black" stroke-linecap="square"></path></svg></button>
@@ -1258,7 +1422,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src='//www.goog
     </button>
 </div>
   </div>
-  <div class="c-secondary-nav header-nav is-visible disable-transitions" id="secondary-nav" data-component="c-secondary-nav" data-instance-id="vtKXu" data-component-initialised="true">
+  <div class="c-secondary-nav header-nav is-visible disable-transitions" id="secondary-nav" data-component="c-secondary-nav" data-instance-id="4NC81" data-component-initialised="true">
     <div class="menu menu-search">
     <button class="c-button c-button--secondary-nav-link nav-item--search nav-item--search-button" type="button">
       <span class="icon icon-nav-search"><svg role="presentation" width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M21 21L16.6569 16.6569M16.6569 16.6569C18.1046 15.2091 19 13.2091 19 11C19 6.58172 15.4183 3 11 3C6.58172 3 3 6.58172 3 11C3 15.4183 6.58172 19 11 19C13.2091 19 15.2091 18.1046 16.6569 16.6569Z" stroke="#5A5A5A" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"></path></svg></span>
@@ -1397,9 +1561,9 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src='//www.goog
 
 <!-- Información del producto -->
 <div id="spa-detail" class="hide" style="display: block;">
-<div class="p-product-detail page" data-component="p-page" data-instance-id="Icgwh" data-component-initialised="true">
+<div class="p-product-detail page" data-component="p-page" data-instance-id="diUPK" data-component-initialised="true">
     <!-- Información del producto -->
-    <div id="productCard" class="m-product-view new-pdp" data-theme-toggle="dark" data-instance-id="irRs6" data-component-initialised="true">
+    <div id="productCard" class="m-product-view new-pdp" data-theme-toggle="dark" data-instance-id="cNIHw" data-component-initialised="true">
     <product-card-app dir="ltr" is-mobile="" style="--single-view-gallery-height: 1435px; --gallery-area-height: 1435px; --single-view-gallery-width: 1265px;"></product-card-app></div>
     <div class="page--overlay"></div>
     <div class="product-modular-container"><!---->
@@ -1565,4 +1729,4 @@ inditex.onReady(function()
       </div>
     </div>
   </div>
-</div></div><product-card-app-tag-manager></product-card-app-tag-manager><link rel="stylesheet" href="/front/static/itxwebstandard/css/icons-data-runtime.min.css?20260715085833" media="all"><script type="text/javascript" id="" charset="">(function(){try{var a=google_tag_manager[google_tag_manager["rm"]["7542353"](24)];a.dataLayer.set("settings.location",document.location.href)}catch(b){console.log("referrer")}})();</script><script type="text/javascript" id="" charset="">try{var a=google_tag_manager["rm"]["7542353"](25)("_ga");""==a&&(google_tag_manager["rm"]["7542353"](26)("_ga_15YV9Q2HD0","0","",".pullandbear.com"),google_tag_manager["rm"]["7542353"](27)("_ga_WK516SYDRY","0","",".pullandbear.com"))}catch(b){};</script></body></html>
+</div></div><product-card-app-tag-manager></product-card-app-tag-manager><script type="text/javascript" id="" charset="">(function(){try{var a=google_tag_manager[google_tag_manager["rm"]["7542353"](24)];a.dataLayer.set("settings.location",document.location.href)}catch(b){console.log("referrer")}})();</script><script type="text/javascript" id="" charset="">try{var a=google_tag_manager["rm"]["7542353"](25)("_ga");""==a&&(google_tag_manager["rm"]["7542353"](26)("_ga_15YV9Q2HD0","0","",".pullandbear.com"),google_tag_manager["rm"]["7542353"](27)("_ga_WK516SYDRY","0","",".pullandbear.com"))}catch(b){};</script><link rel="stylesheet" href="/front/static/itxwebstandard/css/icons-data-runtime.min.css?20260715085833" media="all"></body></html>
