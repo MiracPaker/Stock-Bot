@@ -107,8 +107,14 @@ sadece henüz kullanılmıyorlar.
 
 ## Önemli not
 
-`ai_service.py`'deki Gemini entegrasyonu, resmi dokümantasyona göre yazıldı
-ancak bu ortamın ağ kısıtlamaları nedeniyle gerçek bir API anahtarıyla canlı
-test edilemedi. Kurulumdan hemen sonra `/start` ve bir yemek fotoğrafıyla
-test etmemiz gerekiyor; beklenmedik bir hata çıkarsa Render'ın "Logs"
-sekmesinden hatayı görüp birlikte düzeltebiliriz.
+`ai_service.py`, Gemini için resmi `google-genai` Python SDK'sını kullanıyor
+(ham REST çağrısı değil) — çünkü Google 2026 ortasında bazı hesaplara yeni
+bir anahtar formatı ("AQ." ile başlayan) dağıtmaya başladı ve bu anahtarlar
+elle yazılmış REST çağrılarında bazı hesaplarda 401 hatası verebiliyor
+(Google'ın kendi geliştirici forumunda güncel, henüz tam çözülmemiş bir
+konu). Resmi SDK bu farkı kendi içinde yönetiyor.
+
+Yine de bu entegrasyon gerçek bir API anahtarıyla canlı test edilemedi (bu
+ortamın ağ kısıtlamaları nedeniyle). Kurulumdan hemen sonra `/start` ve bir
+yemek fotoğrafıyla test etmemiz gerekiyor; beklenmedik bir hata çıkarsa
+Render'ın "Logs" sekmesinden hatayı görüp birlikte düzeltebiliriz.
