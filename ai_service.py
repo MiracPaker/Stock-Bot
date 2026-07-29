@@ -5,10 +5,16 @@ Neden Gemini: OpenAI ve Anthropic'in aksine, Google'ın gerçekten süresiz
 (sadece hız/gün limitli) bir ücretsiz API katmanı var - kişisel kullanım
 hacmi için fazlasıyla yeterli.
 
-NOT: Bu kod, Google'ın resmi REST dokümantasyonuna göre yazıldı ancak
-gerçek bir API anahtarıyla canlı test edilemedi (bu ortamın ağ erişimi
-generativelanguage.googleapis.com'a kapalı). Kuruluma başlar başlamaz
-basit bir mesajla birlikte test etmemiz gerekiyor.
+NOT: Google, 2026 ortasında bazı hesaplara yeni bir anahtar formatı
+("AQ." ile başlayan) dağıtmaya başladı. Bu anahtarlar, elle yazılmış ham
+REST çağrılarında (x-goog-api-key header'ıyla) bazı hesaplarda 401 hatası
+verebiliyor (Google'ın kendi geliştirici forumunda güncel, çözülmemiş bir
+konu). Bu yüzden ham `requests` yerine resmi `google-genai` SDK'sını
+kullanıyoruz - kimlik doğrulama farkını kendi içinde yönetiyor.
+
+Bu kod, gerçek bir API anahtarıyla canlı test edilemedi (bu ortamın ağ
+erişimi generativelanguage.googleapis.com'a kapalı). Kuruluma başlar
+başlamaz basit bir mesajla birlikte test etmemiz gerekiyor.
 
 API anahtarı GEMINI_API_KEY ortam değişkeninden okunur.
 """
@@ -18,7 +24,8 @@ import json
 import logging
 import re
 
-import requests
+from google import genai
+from google.genai import types
 
 log = logging.getLogger("ai_service")
 
@@ -27,7 +34,21 @@ GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY")
 # katmanda olduğunu kontrol edebilirsin. Modeli değiştirmek istersen sadece
 # burayı güncellemen yeterli.
 GEMINI_MODEL = os.environ.get("GEMINI_MODEL", "gemini-2.5-flash")
-GEMINI_ENDPOINT = f"https://generativelanguage.googleapis.com/v1beta/models/{GEMINI_MODEL}:generateContent"
+
+_client = None
+
+
+def _get_client():
+    global _client
+    if _client is None:
+        if not GEMINI_API_KEY:
+            raise AIAnalysisError(
+                "GEMINI_API_KEY ortam değişkeni tanımlı değil. Render'da "
+                "environment variable olarak eklendiğinden emin ol."
+            )
+        _client = genai.Client(api_key=GEMINI_API_KEY)
+    return _client
+
 
 REQUIRED_FOOD_ITEM_KEYS = {"name", "amount_g", "calories", "protein_g", "carbs_g", "fat_g"}
 REQUIRED_TOTAL_KEYS = {"calories", "protein_g", "carbs_g", "fat_g"}
@@ -130,43 +151,25 @@ def _validate_food_analysis(data: dict) -> dict:
     }
 
 
-def _call_gemini(parts: list) -> dict:
-    if not GEMINI_API_KEY:
-        raise AIAnalysisError(
-            "GEMINI_API_KEY tanımlı değil. Render'da environment variable "
-            "olarak eklendiğinden emin ol."
-        )
-
-    payload = {
-        "contents": [{"parts": parts}],
-        "generationConfig": {
-            "responseMimeType": "application/json",
-            "temperature": 0.2,
-        },
-    }
+def _call_gemini(contents: list) -> dict:
+    client = _get_client()
 
     try:
-        resp = requests.post(
-            GEMINI_ENDPOINT,
-            headers={
-                "Content-Type": "application/json",
-                "x-goog-api-key": GEMINI_API_KEY,
-            },
-            data=json.dumps(payload),
-            timeout=45,
+        response = client.models.generate_content(
+            model=GEMINI_MODEL,
+            contents=contents,
+            config=types.GenerateContentConfig(
+                response_mime_type="application/json",
+                temperature=0.2,
+            ),
         )
-    except requests.RequestException as e:
-        raise AIAnalysisError(f"Gemini API'sine ulaşılamadı: {e}")
+    except Exception as e:
+        log.error(f"Gemini API çağrısı başarısız: {e}")
+        raise AIAnalysisError(f"Yapay zeka servisine ulaşılamadı: {e}")
 
-    if resp.status_code != 200:
-        log.error(f"Gemini API hata döndü ({resp.status_code}): {resp.text[:500]}")
-        raise AIAnalysisError(f"Yapay zeka servisi cevap vermedi (HTTP {resp.status_code}).")
-
-    try:
-        data = resp.json()
-        raw_text = data["candidates"][0]["content"]["parts"][0]["text"]
-    except (KeyError, IndexError, ValueError) as e:
-        log.error(f"Gemini cevabı beklenmedik formatta: {e} | raw={resp.text[:500]}")
+    raw_text = getattr(response, "text", None)
+    if not raw_text:
+        log.error(f"Gemini boş/beklenmedik cevap döndürdü: {response}")
         raise AIAnalysisError("Yapay zekadan geçersiz cevap alındı.")
 
     try:
@@ -181,23 +184,21 @@ def _call_gemini(parts: list) -> dict:
 def analyze_food_text(description: str) -> dict:
     """Doğal dil yemek açıklamasını analiz eder.
     Döner: {"foods": [...], "total": {...}, "confidence": "..."}"""
-    parts = [
-        {"text": FOOD_ANALYSIS_INSTRUCTIONS},
-        {"text": f"Kullanıcının yediği yemek: {description}"},
+    contents = [
+        FOOD_ANALYSIS_INSTRUCTIONS,
+        f"Kullanıcının yediği yemek: {description}",
     ]
-    raw = _call_gemini(parts)
+    raw = _call_gemini(contents)
     return _validate_food_analysis(raw)
 
 
 def analyze_food_photo(image_bytes: bytes, mime_type: str = "image/jpeg") -> dict:
     """Yemek fotoğrafını analiz eder.
     Döner: {"foods": [...], "total": {...}, "confidence": "..."}"""
-    import base64
-    b64_data = base64.b64encode(image_bytes).decode("utf-8")
-    parts = [
-        {"text": FOOD_ANALYSIS_INSTRUCTIONS},
-        {"inline_data": {"mime_type": mime_type, "data": b64_data}},
-        {"text": "Yukarıdaki fotoğraftaki yemeği analiz et."},
+    contents = [
+        FOOD_ANALYSIS_INSTRUCTIONS,
+        types.Part.from_bytes(data=image_bytes, mime_type=mime_type),
+        "Yukarıdaki fotoğraftaki yemeği analiz et.",
     ]
-    raw = _call_gemini(parts)
+    raw = _call_gemini(contents)
     return _validate_food_analysis(raw)
