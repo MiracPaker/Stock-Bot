@@ -33,7 +33,7 @@ GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY")
 # Google AI Studio'da (aistudio.google.com) hangi modellerin o an ücretsiz
 # katmanda olduğunu kontrol edebilirsin. Modeli değiştirmek istersen sadece
 # burayı güncellemen yeterli.
-GEMINI_MODEL = os.environ.get("GEMINI_MODEL", "gemini-2.5-flash")
+GEMINI_MODEL = os.environ.get("GEMINI_MODEL", "gemini-3.5-flash")
 
 _client = None
 
