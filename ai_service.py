@@ -23,6 +23,7 @@ import os
 import json
 import logging
 import re
+import time
 
 from google import genai
 from google.genai import types
@@ -151,21 +152,43 @@ def _validate_food_analysis(data: dict) -> dict:
     }
 
 
-def _call_gemini(contents: list) -> dict:
+def _is_transient_error(e: Exception) -> bool:
+    """503 (yüksek talep), 429 (rate limit) gibi GEÇİCİ hatalarda True döner -
+    bunlarda tekrar denemek mantıklı. 400/404 gibi kalıcı hatalarda tekrar
+    denemenin anlamı yok, boşuna beklemeyelim."""
+    msg = str(e).upper()
+    return any(code in msg for code in ["503", "UNAVAILABLE", "429", "RESOURCE_EXHAUSTED", "500", "INTERNAL"])
+
+
+def _call_gemini(contents: list, max_retries: int = 2) -> dict:
     client = _get_client()
 
-    try:
-        response = client.models.generate_content(
-            model=GEMINI_MODEL,
-            contents=contents,
-            config=types.GenerateContentConfig(
-                response_mime_type="application/json",
-                temperature=0.2,
-            ),
-        )
-    except Exception as e:
-        log.error(f"Gemini API çağrısı başarısız: {e}")
-        raise AIAnalysisError(f"Yapay zeka servisine ulaşılamadı: {e}")
+    last_error = None
+    for attempt in range(max_retries + 1):
+        try:
+            response = client.models.generate_content(
+                model=GEMINI_MODEL,
+                contents=contents,
+                config=types.GenerateContentConfig(
+                    response_mime_type="application/json",
+                    temperature=0.2,
+                ),
+            )
+            break  # başarılı, döngüden çık
+        except Exception as e:
+            last_error = e
+            if attempt < max_retries and _is_transient_error(e):
+                wait_seconds = 2 * (attempt + 1)  # 2sn, sonra 4sn
+                log.warning(
+                    f"Geçici Gemini hatası (deneme {attempt + 1}/{max_retries + 1}), "
+                    f"{wait_seconds}sn sonra tekrar denenecek: {e}"
+                )
+                time.sleep(wait_seconds)
+                continue
+            log.error(f"Gemini API çağrısı başarısız: {e}")
+            raise AIAnalysisError(f"Yapay zeka servisine ulaşılamadı: {e}")
+    else:
+        raise AIAnalysisError(f"Yapay zeka servisine ulaşılamadı: {last_error}")
 
     raw_text = getattr(response, "text", None)
     if not raw_text:
