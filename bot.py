@@ -50,6 +50,13 @@ class _KeepAliveHandler(BaseHTTPRequestHandler):
         self.end_headers()
         self.wfile.write(b"OK - kalori-takip botu calisiyor")
 
+    def do_HEAD(self):
+        # UptimeRobot ve benzeri izleme servisleri bazen GET yerine HEAD
+        # kullanır - bunu da desteklemezsek "down" olarak işaretlenebilir.
+        self.send_response(200)
+        self.send_header("Content-Type", "text/plain")
+        self.end_headers()
+
     def log_message(self, format, *args):
         pass  # HTTP erişim loglarıyla asıl bot loglarını kirletmeyelim
 
