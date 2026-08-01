@@ -35,6 +35,10 @@ GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY")
 # katmanda olduğunu kontrol edebilirsin. Modeli değiştirmek istersen sadece
 # burayı güncellemen yeterli.
 GEMINI_MODEL = os.environ.get("GEMINI_MODEL", "gemini-3.5-flash")
+# gemini-3.5-flash yeni çıktığı için bazen "yüksek talep" (503) hatası
+# verebiliyor. Bu durumda otomatik olarak daha hafif/az yoğun bu modele
+# geçiyoruz - kullanıcı fark etmeden.
+GEMINI_MODEL_FALLBACK = os.environ.get("GEMINI_MODEL_FALLBACK", "gemini-3.1-flash-lite")
 
 _client = None
 
@@ -160,35 +164,51 @@ def _is_transient_error(e: Exception) -> bool:
     return any(code in msg for code in ["503", "UNAVAILABLE", "429", "RESOURCE_EXHAUSTED", "500", "INTERNAL"])
 
 
-def _call_gemini(contents: list, max_retries: int = 2) -> dict:
+def _try_model(model_name: str, contents: list, max_retries: int):
+    """Tek bir model için retry döngüsü. Başarısız olursa exception fırlatır."""
     client = _get_client()
-
     last_error = None
     for attempt in range(max_retries + 1):
         try:
-            response = client.models.generate_content(
-                model=GEMINI_MODEL,
+            return client.models.generate_content(
+                model=model_name,
                 contents=contents,
                 config=types.GenerateContentConfig(
                     response_mime_type="application/json",
                     temperature=0.2,
                 ),
             )
-            break  # başarılı, döngüden çık
         except Exception as e:
             last_error = e
             if attempt < max_retries and _is_transient_error(e):
-                wait_seconds = 2 * (attempt + 1)  # 2sn, sonra 4sn
+                wait_seconds = 2 * (attempt + 1)
                 log.warning(
-                    f"Geçici Gemini hatası (deneme {attempt + 1}/{max_retries + 1}), "
+                    f"[{model_name}] Geçici Gemini hatası (deneme {attempt + 1}/{max_retries + 1}), "
                     f"{wait_seconds}sn sonra tekrar denenecek: {e}"
                 )
                 time.sleep(wait_seconds)
                 continue
-            log.error(f"Gemini API çağrısı başarısız: {e}")
-            raise AIAnalysisError(f"Yapay zeka servisine ulaşılamadı: {e}")
-    else:
-        raise AIAnalysisError(f"Yapay zeka servisine ulaşılamadı: {last_error}")
+            raise last_error
+    raise last_error
+
+
+def _call_gemini(contents: list, max_retries: int = 2) -> dict:
+    try:
+        response = _try_model(GEMINI_MODEL, contents, max_retries)
+    except Exception as primary_error:
+        if not _is_transient_error(primary_error):
+            log.error(f"Gemini API çağrısı başarısız (kalıcı hata): {primary_error}")
+            raise AIAnalysisError(f"Yapay zeka servisine ulaşılamadı: {primary_error}")
+
+        log.warning(
+            f"Ana model ({GEMINI_MODEL}) tüm denemelerde başarısız oldu, "
+            f"yedek model ({GEMINI_MODEL_FALLBACK}) deneniyor: {primary_error}"
+        )
+        try:
+            response = _try_model(GEMINI_MODEL_FALLBACK, contents, max_retries=1)
+        except Exception as fallback_error:
+            log.error(f"Yedek model de başarısız oldu: {fallback_error}")
+            raise AIAnalysisError(f"Yapay zeka servisine ulaşılamadı: {fallback_error}")
 
     raw_text = getattr(response, "text", None)
     if not raw_text:
